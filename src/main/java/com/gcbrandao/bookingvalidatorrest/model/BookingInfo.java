@@ -3,10 +3,12 @@ package com.gcbrandao.bookingvalidatorrest.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class BookingInfo {
     Integer weeks;
+
     Integer daysAfter;
     Integer daysBefore;
     LocalDate checkin;
@@ -47,13 +49,21 @@ public class BookingInfo {
         this.daysBefore = daysBefore;
     }
 
-    public LocalDate getCheckin() { return checkin; }
+    public LocalDate getCheckin() {
+        return checkin;
+    }
 
-    public void setCheckin(LocalDate checkin) {  this.checkin = checkin; }
+    public void setCheckin(LocalDate checkin) {
+        this.checkin = checkin;
+    }
 
-    public LocalDate getCheckout() { return checkout; }
+    public LocalDate getCheckout() {
+        return checkout;
+    }
 
-    public void setCheckout(LocalDate checkout) { this.checkout = checkout; }
+    public void setCheckout(LocalDate checkout) {
+        this.checkout = checkout;
+    }
 
     @Override
     public String toString() {
@@ -70,4 +80,21 @@ public class BookingInfo {
 
         return str.toString();
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BookingInfo that = (BookingInfo) o;
+        return Objects.equals(weeks, that.weeks) &&
+                Objects.equals(daysAfter, that.daysAfter) &&
+                Objects.equals(daysBefore, that.daysBefore);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(weeks, daysAfter, daysBefore);
+    }
+
+
 }
