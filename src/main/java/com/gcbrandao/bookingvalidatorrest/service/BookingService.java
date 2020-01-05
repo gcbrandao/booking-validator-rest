@@ -14,22 +14,6 @@ import static java.time.DayOfWeek.*;
 @Service
 public class BookingService {
 
-    public void main(String[] args) {
-
-
-//
-//        // valida se o checkIn é maior que o checkout
-//        if(checkin.isBefore(checkout)){
-//            //conta as semanas e dias adicionais
-//            //bookingInfo = countWeeks(checkin, checkout);
-//        } else {
-//            System.out.println("Data de checkIn deve ser anterior a data de checkout!!");
-//            System.exit(0);
-//        }
-//
-//        System.out.println(bookingInfo.toString());
-    }
-
     /**
      * Metodo que verifica a diferença entre duas datas informadas e retorna em numero de semnas e dias extra.
      * 1 - Verifica se as datas sao menos que uma semana e completa a semana baseada no domingo
@@ -61,10 +45,6 @@ public class BookingService {
         }
 
         weeks = getWeeks(bookingInfo);
-
-        // pega o base day e calcula o provavel checkout
-        DayOfWeek baseDayOfWeek = getBaseDayOfWeek(checkIn);
-
 
         BookingInfo fullWeeksBookingInfo = getFullWeeks(checkIn, weeks);
 
@@ -98,9 +78,6 @@ public class BookingService {
 
         weeks = totalDays / 7;
 
-//        if (totalDays % 7 >= 5) {
-//            weeks++;
-//        }
         return weeks;
     }
 
@@ -214,19 +191,5 @@ public class BookingService {
                 return SATURDAY;
         }
         return baseDayOfWeek;
-    }
-
-
-    /**
-     * Metodo que recebe a String com a data e retorna um LocalDate
-     *
-     * @param strDate
-     * @return LocalDate
-     */
-    public static LocalDate string2LocalDate(String strDate) {
-        final String DELIMITADOR_DATA = "-";
-        String[] tokens = strDate.split(DELIMITADOR_DATA);
-
-        return LocalDate.of(Integer.valueOf(tokens[0]), Integer.valueOf(tokens[1]), Integer.valueOf(tokens[2]));
     }
 }
