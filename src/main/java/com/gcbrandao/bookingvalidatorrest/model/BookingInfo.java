@@ -2,12 +2,15 @@ package com.gcbrandao.bookingvalidatorrest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class BookingInfo {
 
+    @NotNull
     LocalDate checkin;
+    @NotNull
     LocalDate checkout;
 
     public BookingInfo() {

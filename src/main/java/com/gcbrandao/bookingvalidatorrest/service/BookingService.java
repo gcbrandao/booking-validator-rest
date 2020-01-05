@@ -2,6 +2,7 @@ package com.gcbrandao.bookingvalidatorrest.service;
 
 import com.gcbrandao.bookingvalidatorrest.model.BookingInfo;
 import com.gcbrandao.bookingvalidatorrest.model.BookingReturn;
+import com.gcbrandao.bookingvalidatorrest.service.exception.BookingException;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
@@ -49,6 +50,9 @@ public class BookingService {
         Integer daysAfter = 0;
         Integer daysBefore = 0;
 
+        if (checkIn.isAfter(checkOut)){
+            throw new BookingException("Data de check in [" + checkIn + "] deve ser anterior a data de check out [" + checkOut + "]");
+        }
 
         int totalDays = (int) ChronoUnit.DAYS.between(checkIn, checkOut);
 
