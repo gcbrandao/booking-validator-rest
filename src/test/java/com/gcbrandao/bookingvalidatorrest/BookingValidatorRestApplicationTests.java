@@ -633,6 +633,66 @@ class BookingValidatorRestApplicationTests {
         assertThat(bookReturn.getDaysBefore()).isEqualTo(2);
     }
 
+    @Test
+    void case30() throws Exception {
+        LocalDate checkIn = string2LocalDate("2020-01-07");
+        LocalDate checkOut = string2LocalDate("2020-01-20");
+
+        BookingInfo bookingInfo = new BookingInfo(checkIn, checkOut);
+
+        mockMvc.perform(post("/bookings")
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(bookingInfo)))
+                .andExpect(status().isOk());
+
+        BookingReturn bookReturn = service.getWeeksAndExtraNigths(bookingInfo);
+
+
+        assertThat(bookReturn.getWeeks()).isEqualTo(2);
+        assertThat(bookReturn.getDaysAfter()).isEqualTo(1);
+        assertThat(bookReturn.getDaysBefore()).isEqualTo(0);
+    }
+
+    @Test
+    void case31() throws Exception {
+        LocalDate checkIn = string2LocalDate("2020-01-05");
+        LocalDate checkOut = string2LocalDate("2020-01-14");
+
+        BookingInfo bookingInfo = new BookingInfo(checkIn, checkOut);
+
+        mockMvc.perform(post("/bookings")
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(bookingInfo)))
+                .andExpect(status().isOk());
+
+        BookingReturn bookReturn = service.getWeeksAndExtraNigths(bookingInfo);
+
+
+        assertThat(bookReturn.getWeeks()).isEqualTo(1);
+        assertThat(bookReturn.getDaysAfter()).isEqualTo(2);
+        assertThat(bookReturn.getDaysBefore()).isEqualTo(0);
+    }
+
+    @Test
+    void case32() throws Exception {
+        LocalDate checkIn = string2LocalDate("2020-01-08");
+        LocalDate checkOut = string2LocalDate("2020-01-31");
+
+        BookingInfo bookingInfo = new BookingInfo(checkIn, checkOut);
+
+        mockMvc.perform(post("/bookings")
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(bookingInfo)))
+                .andExpect(status().isOk());
+
+        BookingReturn bookReturn = service.getWeeksAndExtraNigths(bookingInfo);
+
+
+        assertThat(bookReturn.getWeeks()).isEqualTo(3);
+        assertThat(bookReturn.getDaysAfter()).isEqualTo(0);
+        assertThat(bookReturn.getDaysBefore()).isEqualTo(3);
+    }
+
 
     @Test
     void validateGetWeeks() throws Exception {

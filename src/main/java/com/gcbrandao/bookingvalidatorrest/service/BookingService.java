@@ -51,10 +51,15 @@ public class BookingService {
         // se a data de check in for antes da fullWeek calcula noitesExtra antes
         if (checkIn.isBefore(fullWeeksBookingInfo.getCheckin())) {
             daysBefore = getNightsBefore(checkIn, getBaseDayOfWeek(checkIn));
-            if (daysBefore > 4) {
+            if (daysBefore >= 4) {
                 daysBefore = 0;
                 weeks++;
             }
+        }
+        // se a data do checkin for depois do fullWeek e  for seg ou ter add uma semana
+        if (checkIn.isAfter(fullWeeksBookingInfo.getCheckin())
+                && (checkIn.getDayOfWeek().equals(MONDAY) || checkIn.getDayOfWeek().equals(TUESDAY))) {
+            weeks++;
         }
 
         // se o checkOut for depois do fim da full week calcula as noites extra depois
