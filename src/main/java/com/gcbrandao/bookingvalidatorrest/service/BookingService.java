@@ -17,7 +17,6 @@ public class BookingService {
     public void main(String[] args) {
 
 
-
 //
 //        // valida se o checkIn é maior que o checkout
 //        if(checkin.isBefore(checkout)){
@@ -50,7 +49,7 @@ public class BookingService {
         Integer daysAfter = 0;
         Integer daysBefore = 0;
 
-        if (checkIn.isAfter(checkOut)){
+        if (checkIn.isAfter(checkOut)) {
             throw new BookingException("Data de check in [" + checkIn + "] deve ser anterior a data de check out [" + checkOut + "]");
         }
 

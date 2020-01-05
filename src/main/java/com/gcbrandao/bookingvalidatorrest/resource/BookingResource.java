@@ -9,15 +9,12 @@ import com.gcbrandao.bookingvalidatorrest.service.exception.BookingException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
@@ -33,8 +30,8 @@ public class BookingResource {
     private MessageSource messageSource;
 
     @PostMapping
-    public  ResponseEntity<BookingReturn> getWeeksAndExtraNigths(@Valid  @RequestBody BookingInfo bookingInfo,
-                                                                 HttpServletResponse response){
+    public ResponseEntity<BookingReturn> getWeeksAndExtraNigths(@Valid @RequestBody BookingInfo bookingInfo,
+                                                                HttpServletResponse response) {
 
         BookingReturn bookingInfoReturn = bookingService.getWeeksAndExtraNigths(bookingInfo);
 

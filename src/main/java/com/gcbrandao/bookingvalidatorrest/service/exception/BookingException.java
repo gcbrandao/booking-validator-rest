@@ -1,6 +1,6 @@
 package com.gcbrandao.bookingvalidatorrest.service.exception;
 
-public class BookingException  extends RuntimeException {
+public class BookingException extends RuntimeException {
     /**
      *
      */
