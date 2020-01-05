@@ -44,9 +44,10 @@ public class BookingService {
             return shortTrip(bookingInfo);
         }
 
-        weeks = getWeeks(bookingInfo);
 
-        BookingInfo fullWeeksBookingInfo = getFullWeeks(checkIn, weeks);
+
+        BookingInfo fullWeeksBookingInfo = getFullWeeks(checkIn, checkOut);
+        weeks = getWeeks(fullWeeksBookingInfo);
 
         // se a data de check in for antes da fullWeek calcula noitesExtra antes
         if (checkIn.isBefore(fullWeeksBookingInfo.getCheckin())) {
@@ -57,10 +58,10 @@ public class BookingService {
             }
         }
         // se a data do checkin for depois do fullWeek e  for seg ou ter add uma semana
-        if (checkIn.isAfter(fullWeeksBookingInfo.getCheckin())
-                && (checkIn.getDayOfWeek().equals(MONDAY) || checkIn.getDayOfWeek().equals(TUESDAY))) {
-            weeks++;
-        }
+//        if (checkIn.isAfter(fullWeeksBookingInfo.getCheckin())
+//                && (checkIn.getDayOfWeek().equals(MONDAY) || checkIn.getDayOfWeek().equals(TUESDAY))) {
+//            weeks++;
+//        }
 
         // se o checkOut for depois do fim da full week calcula as noites extra depois
         if (checkOut.isAfter(fullWeeksBookingInfo.getCheckout())) {
@@ -87,11 +88,16 @@ public class BookingService {
     }
 
     // retorna a semana cheia sem considerar as noites extra
-    public BookingInfo getFullWeeks(LocalDate checkIn, Integer weeks) {
+    public BookingInfo getFullWeeks(LocalDate checkIn, LocalDate checkOut) {
         // calculo de semanas cheias
 
         LocalDate fullCheckIn = checkIn;
-        LocalDate fullCheckOut = checkIn;
+        LocalDate fullCheckOut = checkOut;
+
+        BookingInfo bookingInfo = new BookingInfo(checkIn, checkOut);
+        BookingInfo fullBookingInfo = new BookingInfo();
+
+        // calcular o checkIn correto
 
         //segunda ou terça, contar  de domingo em domingo a partir do primeiro domingo anterior ao check-in
         if (fullCheckIn.getDayOfWeek().equals(MONDAY) || fullCheckIn.getDayOfWeek().equals(TUESDAY)) {
@@ -106,9 +112,41 @@ public class BookingService {
             }
         }
 
-        fullCheckOut = fullCheckIn.plusWeeks(weeks);
+        // calcular o chechOut correto
 
-        return new BookingInfo(fullCheckIn, fullCheckOut);
+        // se a semana eh de doming a domingo - volta ate o domingo anterior
+        if(fullCheckIn.getDayOfWeek().equals(SUNDAY) && !fullCheckOut.getDayOfWeek().equals(SUNDAY)){
+            while (!fullCheckOut.getDayOfWeek().equals(SUNDAY)){
+                fullCheckOut = fullCheckOut.minusDays(1L);
+            }
+        }
+
+        // se a semana eh de sabado a sabado retorne ate o sabado anterior
+        if (fullCheckIn.getDayOfWeek().equals(SATURDAY)   && !fullCheckOut.getDayOfWeek().equals(SATURDAY)) {
+            while (!fullCheckOut.getDayOfWeek().equals(SATURDAY)) {
+                fullCheckOut = fullCheckOut.minusDays(1L);
+            }
+        }
+
+        // re monta o bookingInfo
+        fullBookingInfo = new BookingInfo(fullCheckIn, fullCheckOut);
+
+        // verifica casos em que o numero de semanas retora menor que o tamanho da viagem
+        Integer totalDays = (int) ChronoUnit.DAYS.between(fullCheckIn, fullCheckOut);
+        if (totalDays < 7){
+            // se a semana eh de sabado a sabado retorne ate o sabado anterior
+            if (fullCheckIn.getDayOfWeek().equals(SATURDAY)   && fullCheckOut.equals(fullCheckIn)) {
+                fullCheckOut = fullCheckOut.plusDays(1L);
+                while (!fullCheckOut.getDayOfWeek().equals(SATURDAY)) {
+                    fullCheckOut = fullCheckOut.plusDays(1L);
+                }
+                fullBookingInfo.setCheckout(fullCheckOut);
+            }
+        }
+
+
+
+        return fullBookingInfo;
     }
 
 

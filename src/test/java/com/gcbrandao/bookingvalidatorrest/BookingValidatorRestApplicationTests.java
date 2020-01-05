@@ -693,6 +693,46 @@ class BookingValidatorRestApplicationTests {
         assertThat(bookReturn.getDaysBefore()).isEqualTo(3);
     }
 
+    @Test
+    void case33() throws Exception {
+        LocalDate checkIn = string2LocalDate("2020-01-07");
+        LocalDate checkOut = string2LocalDate("2020-01-15");
+
+        BookingInfo bookingInfo = new BookingInfo(checkIn, checkOut);
+
+        mockMvc.perform(post("/bookings")
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(bookingInfo)))
+                .andExpect(status().isOk());
+
+        BookingReturn bookReturn = service.getWeeksAndExtraNigths(bookingInfo);
+
+
+        assertThat(bookReturn.getWeeks()).isEqualTo(1);
+        assertThat(bookReturn.getDaysAfter()).isEqualTo(3);
+        assertThat(bookReturn.getDaysBefore()).isEqualTo(0);
+    }
+
+    @Test
+    void case34() throws Exception {
+        LocalDate checkIn = string2LocalDate("2020-01-07");
+        LocalDate checkOut = string2LocalDate("2020-01-22");
+
+        BookingInfo bookingInfo = new BookingInfo(checkIn, checkOut);
+
+        mockMvc.perform(post("/bookings")
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(bookingInfo)))
+                .andExpect(status().isOk());
+
+        BookingReturn bookReturn = service.getWeeksAndExtraNigths(bookingInfo);
+
+
+        assertThat(bookReturn.getWeeks()).isEqualTo(2);
+        assertThat(bookReturn.getDaysAfter()).isEqualTo(3);
+        assertThat(bookReturn.getDaysBefore()).isEqualTo(0);
+    }
+
 
     @Test
     void validateGetWeeks() throws Exception {
@@ -712,8 +752,17 @@ class BookingValidatorRestApplicationTests {
 
         Integer weeks2 = service.getWeeks(bookingInfo2);
 
+        // case30
+        LocalDate checkIn3 = string2LocalDate("2020-01-07");
+        LocalDate checkOut3 = string2LocalDate("2020-01-20");
+
+        BookingInfo bookingInfo3 = new BookingInfo(checkIn3, checkOut3);
+
+        Integer weeks3 = service.getWeeks(bookingInfo3);
+
         assertThat(weeks).isEqualTo(1);
         assertThat(weeks2).isEqualTo(2);
+        assertThat(weeks3).isEqualTo(1);
 
     }
 
@@ -818,20 +867,52 @@ class BookingValidatorRestApplicationTests {
 
     @Test
     void validateFullWeeks() {
+        // case1
         LocalDate checkIn1 = string2LocalDate("2020-01-02");
+        LocalDate checkOut1 = string2LocalDate("2020-01-13");
         // checkin quinta = sabado em sabado apos checkin
-        BookingInfo bookingInfo1 = service.getFullWeeks(checkIn1, 2);
+        BookingInfo bookingInfo1 = service.getFullWeeks(checkIn1, checkOut1);
 
+        // case2
         LocalDate checkIn2 = string2LocalDate("2020-01-06");
+        LocalDate checkOut2 = string2LocalDate("2020-01-16");
         // segunda ou terça, contar  de domingo em domingo a partir do primeiro domingo anterior ao check-in
-        BookingInfo bookingInfo2 = service.getFullWeeks(checkIn2, 4);
+        BookingInfo bookingInfo2 = service.getFullWeeks(checkIn2, checkOut2);
+
+        //case3
+        LocalDate checkIn3 = string2LocalDate("2020-01-07");
+        LocalDate checkOut3 = string2LocalDate("2020-01-20");
+        // novo case30
+        BookingInfo bookingInfo3 = service.getFullWeeks(checkIn3, checkOut3);
+
+        //case4
+        LocalDate checkIn4 = string2LocalDate("2020-01-02");
+        LocalDate checkOut4 = string2LocalDate("2020-01-09");
+        // novo case7
+        BookingInfo bookingInfo4 = service.getFullWeeks(checkIn4, checkOut4);
+
+        //case5 baseado no testCase16
+        LocalDate checkIn5 = string2LocalDate("2020-01-02");
+        LocalDate checkOut5 = string2LocalDate("2020-01-18");
+        // novo case7
+        BookingInfo bookingInfo5 = service.getFullWeeks(checkIn5, checkOut5);
 
 
-        assertThat(bookingInfo1.getCheckin()).isEqualTo(LocalDate.of(2020, 01, 04));
-        assertThat(bookingInfo1.getCheckout()).isEqualTo(LocalDate.of(2020, 01, 18));
+        // asserts
+        assertThat(bookingInfo1.getCheckin()).isEqualTo(string2LocalDate("2020-01-04"));
+        assertThat(bookingInfo1.getCheckout()).isEqualTo(string2LocalDate("2020-01-11"));
 
-        assertThat(bookingInfo2.getCheckin()).isEqualTo(LocalDate.of(2020, 01, 05));
-        assertThat(bookingInfo2.getCheckout()).isEqualTo(LocalDate.of(2020, 02, 02));
+        assertThat(bookingInfo2.getCheckin()).isEqualTo(string2LocalDate("2020-01-05"));
+        assertThat(bookingInfo2.getCheckout()).isEqualTo(string2LocalDate("2020-01-12"));
+
+        assertThat(bookingInfo3.getCheckin()).isEqualTo(string2LocalDate("2020-01-05"));
+        assertThat(bookingInfo3.getCheckout()).isEqualTo(string2LocalDate("2020-01-19"));
+
+        assertThat(bookingInfo4.getCheckin()).isEqualTo(string2LocalDate("2020-01-04"));
+        assertThat(bookingInfo4.getCheckout()).isEqualTo(string2LocalDate("2020-01-11"));
+
+        assertThat(bookingInfo5.getCheckin()).isEqualTo(string2LocalDate("2020-01-04"));
+        assertThat(bookingInfo5.getCheckout()).isEqualTo(string2LocalDate("2020-01-18"));
 
     }
 
