@@ -2,6 +2,7 @@ package com.gcbrandao.bookingvalidatorrest.resource;
 
 
 import com.gcbrandao.bookingvalidatorrest.model.BookingInfo;
+import com.gcbrandao.bookingvalidatorrest.model.BookingReturn;
 import com.gcbrandao.bookingvalidatorrest.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -22,13 +23,11 @@ public class BookingResource {
     BookingService bookingService;
 
     @PostMapping
-    public  ResponseEntity<BookingInfo> getWeeksAndExtraNigths( @RequestBody BookingInfo bookingInfo,
-                                                                HttpServletResponse response){
+    public  ResponseEntity<BookingReturn> getWeeksAndExtraNigths(@RequestBody BookingInfo bookingInfo,
+                                                                 HttpServletResponse response){
 
-        BookingInfo bookingInfoReturn = bookingService.getWeeksAndExtraNigths(bookingInfo);
+        BookingReturn bookingInfoReturn = bookingService.getWeeksAndExtraNigths(bookingInfo);
 
         return ResponseEntity.status(HttpStatus.OK).body(bookingInfoReturn);
     }
-
-
 }

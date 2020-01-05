@@ -1,28 +1,22 @@
 package com.gcbrandao.bookingvalidatorrest.service;
 
 import com.gcbrandao.bookingvalidatorrest.model.BookingInfo;
+import com.gcbrandao.bookingvalidatorrest.model.BookingReturn;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.Scanner;
+
+import static java.time.DayOfWeek.*;
 
 @Service
 public class BookingService {
 
-    public  void main(String[] args) {
+    public void main(String[] args) {
 
 
-//        // valida o formato da strind eh valido
-//        if(formatValidation(strCheckin, strCheckout)){
-//            // transforma a string em LocalDate
-//            checkin = string2LocalDate(strCheckin);
-//            checkout = string2LocalDate(strCheckout);
-//        } else {
-//            System.out.println("Formato de data invalido!! As datas devem ter o formato de YYYY-MM-DD");
-//            System.exit(0);
-//        }
+
 //
 //        // valida se o checkIn é maior que o checkout
 //        if(checkin.isBefore(checkout)){
@@ -39,14 +33,14 @@ public class BookingService {
     /**
      * Metodo que verifica a diferença entre duas datas informadas e retorna em numero de semnas e dias extra.
      * 1 - Verifica se as datas sao menos que uma semana e completa a semana baseada no domingo
-     *
-     *
-     *
+     * <p>
+     * <p>
+     * <p>
      * Retorna o objeto BookingInfo que contem as informações necessarias
-
+     *
      * @return BookingInfo
      */
-    public  BookingInfo getWeeksAndExtraNigths(BookingInfo bookingInfo){
+    public BookingReturn getWeeksAndExtraNigths(BookingInfo bookingInfo) {
 
         LocalDate checkIn = bookingInfo.getCheckin();
         LocalDate checkOut = bookingInfo.getCheckout();
@@ -56,134 +50,180 @@ public class BookingService {
         Integer daysBefore = 0;
 
 
-        int days = (int) ChronoUnit.DAYS.between(checkIn, checkOut);
+        int totalDays = (int) ChronoUnit.DAYS.between(checkIn, checkOut);
 
-
-        // verifica dias extra
-        Integer extraDays = days % 7;
-
-        // viagem curta
-        if(days <= 7){
+        // viagem curta eh menos que 7
+        if (totalDays < 7) {
             return shortTrip(bookingInfo);
         }
 
-        // SE NAO FOR NEM SABADO E NEM DOMINGO
-        if (!checkIn.getDayOfWeek().equals(DayOfWeek.SUNDAY) &&
-                !checkIn.getDayOfWeek().equals(DayOfWeek.SATURDAY)) {
+        weeks = getWeeks(bookingInfo);
 
-            // inicio = segunda ou terca -> semana de domingo a domingo
-            if (checkIn.getDayOfWeek().equals(DayOfWeek.MONDAY) ||
-                    checkIn.getDayOfWeek().equals(DayOfWeek.TUESDAY)) {
+        // pega o base day e calcula o provavel checkout
+        DayOfWeek baseDayOfWeek = getBaseDayOfWeek(checkIn);
 
-                // volta checkin para DOMINGO anterior
-                while (!checkIn.getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
-                    checkIn = checkIn.minusDays(1);
-                }
-//                period = Period.between(checkIn, checkOut);
-//                days = period.getDays();
 
-                days = (int)ChronoUnit.DAYS.between(checkIn, checkOut);
+        BookingInfo fullWeeksBookingInfo = getFullWeeks(checkIn, weeks);
 
-                // numero de semanas
-                weeks = days / 7;
+        // se a data de check in for antes da fullWeek calcula noitesExtra antes
+        if (checkIn.isBefore(fullWeeksBookingInfo.getCheckin())) {
+            daysBefore = getNightsBefore(checkIn, getBaseDayOfWeek(checkIn));
+            if (daysBefore > 4) {
                 daysBefore = 0;
-                if(extraDays > 4) {
-                    weeks++;
-                } else {
-                    daysAfter = extraDays;
-                }
-
-            } else { // inicio = quarta ou quinta ou sexta -> semana de sabado a sabado
-                // volta checkin para SABADO anterior
-
-//                while (!checkIn.getDayOfWeek().equals(DayOfWeek.SATURDAY)) {
-//                    checkIn = checkIn.plusDays(1);
-//                }
-
-                days = (int)ChronoUnit.DAYS.between(checkIn, checkOut);
-                // numero de semanas
-                weeks = days / 7;
-                daysAfter = 0;
-                extraDays = days % 7;
-
-                if(extraDays > 4) {
-                    weeks++;
-                } else {
-                    daysBefore = extraDays;
-                }
-
-            }
-
-        } else { // SE FOR SABADO OU DOMINGO
-
-//                period = Period.between(checkIn, checkOut);
-//                days = period.getDays();
-
-            days = (int)ChronoUnit.DAYS.between(checkIn, checkOut);
-            // numero de semanas
-            weeks = days / 7;
-            daysBefore = 0;
-            if(extraDays > 4) {
                 weeks++;
-            } else {
-                daysAfter = extraDays;
             }
-
         }
 
+        // se o checkOut for depois do fim da full week calcula as noites extra depois
+        if (checkOut.isAfter(fullWeeksBookingInfo.getCheckout())) {
+            daysAfter = getNightsAfter(checkOut, getBaseDayOfWeek(checkIn));
+            if (daysAfter >= 4) {
+                daysAfter = 0;
+                weeks++;
+            }
+        }
 
-        // calculo final para retorno
-        //weeks = days / 7;
-        //daysAfter = days % 7;
+        return new BookingReturn(weeks, daysAfter, daysBefore);
+    }
+
+    // retorna o numero total de semanas no periodo considerando arredondamento
+    public Integer getWeeks(BookingInfo bookingInfo) {
+
+        Integer weeks = 0;
+        Integer totalDays = (int) ChronoUnit.DAYS.between(bookingInfo.getCheckin(), bookingInfo.getCheckout());
 
 
-        return new BookingInfo(weeks,daysAfter,daysBefore, checkIn, checkOut);
+        weeks = totalDays / 7;
+
+//        if (totalDays % 7 >= 5) {
+//            weeks++;
+//        }
+        return weeks;
+    }
+
+    // retorna a semana cheia sem considerar as noites extra
+    public BookingInfo getFullWeeks(LocalDate checkIn, Integer weeks) {
+        // calculo de semanas cheias
+
+        LocalDate fullCheckIn = checkIn;
+        LocalDate fullCheckOut = checkIn;
+
+        //segunda ou terça, contar  de domingo em domingo a partir do primeiro domingo anterior ao check-in
+        if (fullCheckIn.getDayOfWeek().equals(MONDAY) || fullCheckIn.getDayOfWeek().equals(TUESDAY)) {
+            while (!fullCheckIn.getDayOfWeek().equals(SUNDAY)) {
+                fullCheckIn = fullCheckIn.minusDays(1L);
+            }
+        }
+        // quarta quinta ou sexta, semanas de sábado em sábado a partir do primeiro sábado após ao check-in
+        if (fullCheckIn.getDayOfWeek().equals(WEDNESDAY) || fullCheckIn.getDayOfWeek().equals(THURSDAY) || fullCheckIn.getDayOfWeek().equals(FRIDAY)) {
+            while (!fullCheckIn.getDayOfWeek().equals(SATURDAY)) {
+                fullCheckIn = fullCheckIn.plusDays(1L);
+            }
+        }
+
+        fullCheckOut = fullCheckIn.plusWeeks(weeks);
+
+        return new BookingInfo(fullCheckIn, fullCheckOut);
     }
 
 
     // viagem curta
-    public BookingInfo  shortTrip(BookingInfo bookingInfo){
+    public BookingReturn shortTrip(BookingInfo bookingInfo) {
 
-        Integer days = (int)ChronoUnit.DAYS.between(bookingInfo.getCheckin(), bookingInfo.getCheckout());
+        Integer days = (int) ChronoUnit.DAYS.between(bookingInfo.getCheckin(), bookingInfo.getCheckout());
+
+        DayOfWeek dayOfWeek = bookingInfo.getCheckin().getDayOfWeek();
 
         Integer weeks = 0;
         Integer daysBefore = 0;
         Integer daysAfter = 0;
 
-        if(days >= 4){
+        if (days >= 4) {
             weeks = 1;
+            daysBefore = 0;
+            daysAfter = 0;
         } else {
+            weeks = 0;
             daysBefore = days;
+            daysAfter = 0;
         }
-        return new BookingInfo(weeks, daysAfter, daysBefore, null, null);
+        return new BookingReturn(weeks, daysAfter, daysBefore);
     }
 
 
+    // calcula noites extra antes de acordo com o dia da semana
+    public int getNightsBefore(LocalDate checkin, DayOfWeek baseDayOfWeek) {
 
-    /**
-     * Metodo que usa regular expressoin para validar o formato da data.
-     * Os valores de entrada devem estar sempre no formado YYYY-MM-DD
-     * @param checkin
-     * @param checkout
-     * @return boolean
-     */
-    public static boolean formatValidation(String checkin, String checkout){
+        int extraNightsBefore = 0;
 
-        final String PATTER_FORMAT = "^[0-9]{4}-(1[0-2]|0[1-9])-(3[01]|[12][0-9]|0[1-9])$";
+        DayOfWeek checkinDayOfWeek = checkin.getDayOfWeek();
 
-        return (checkin.matches(PATTER_FORMAT) && checkout.matches(PATTER_FORMAT));
+        if (checkinDayOfWeek.equals(WEDNESDAY) || checkinDayOfWeek.equals(THURSDAY) ||
+                checkinDayOfWeek.equals(FRIDAY)) {
 
+            while (!checkinDayOfWeek.equals(baseDayOfWeek)) {
+                extraNightsBefore++;
+                checkinDayOfWeek = checkinDayOfWeek.plus(1L);
+            }
+        }
+        return extraNightsBefore;
     }
+
+
+    // calcula noites extra no fim de acordo com a data do checkout
+    //-Se for de sábado em sábado, contar noites extras a partir do último sábado até o check-out.
+    public int getNightsAfter(LocalDate checkout, DayOfWeek baseDayOfWeek) {
+
+        int extraNightsAfter = 0;
+
+        DayOfWeek checkOutDayOfWeek = checkout.getDayOfWeek();
+
+
+        while (!checkOutDayOfWeek.equals(baseDayOfWeek)) {
+            extraNightsAfter++;
+            checkOutDayOfWeek = checkOutDayOfWeek.minus(1L);
+        }
+        return extraNightsAfter;
+    }
+
+    // retorna dia da semana base de calculo de acordo a data de check in
+    // segunda ou terça, contar semanas de domingo em domingo
+    // quarta-feira, quinta-feira ou sexta-feira, contar semanas de sábado em sábado
+    public DayOfWeek getBaseDayOfWeek(LocalDate checkin) {
+
+        DayOfWeek baseDayOfWeek = DayOfWeek.SUNDAY;
+        DayOfWeek checkinDayOfWeek = checkin.getDayOfWeek();
+
+        switch (checkinDayOfWeek) {
+            case SATURDAY:
+                return SATURDAY;
+            case SUNDAY:
+                return SUNDAY;
+            case MONDAY:
+                return SUNDAY;
+            case TUESDAY:
+                return SUNDAY;
+            case WEDNESDAY:
+                return SATURDAY;
+            case THURSDAY:
+                return SATURDAY;
+            case FRIDAY:
+                return SATURDAY;
+        }
+        return baseDayOfWeek;
+    }
+
 
     /**
      * Metodo que recebe a String com a data e retorna um LocalDate
+     *
      * @param strDate
      * @return LocalDate
      */
-    public static LocalDate string2LocalDate(String strDate){
-        final String  DELIMITADOR_DATA = "-";
+    public static LocalDate string2LocalDate(String strDate) {
+        final String DELIMITADOR_DATA = "-";
         String[] tokens = strDate.split(DELIMITADOR_DATA);
 
-        return  LocalDate.of(Integer.valueOf(tokens[0]),Integer.valueOf(tokens[1]),Integer.valueOf(tokens[2]));
+        return LocalDate.of(Integer.valueOf(tokens[0]), Integer.valueOf(tokens[1]), Integer.valueOf(tokens[2]));
     }
 }

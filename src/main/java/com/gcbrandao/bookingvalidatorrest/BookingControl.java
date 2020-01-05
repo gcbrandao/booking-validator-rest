@@ -101,7 +101,7 @@ public class BookingControl {
             weeks = days / 7;
             daysBefore = 0;
             daysafter = 0;
-            return new BookingInfo(weeks,daysafter,daysBefore, checkIn, checkOut);
+            return new BookingInfo(checkIn, checkOut);
 
         }
 
@@ -175,7 +175,7 @@ public class BookingControl {
         //daysafter = days % 7;
 
 
-        return new BookingInfo(weeks,daysafter,daysBefore, checkIn, checkOut);
+        return new BookingInfo(checkIn, checkOut);
     }
 
 
