@@ -10,9 +10,11 @@
     </parent>
     <groupId>com.gcbrandao</groupId>
     <artifactId>booking-validator-rest</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <name>booking-validator-rest</name>
-    <description>Demo project for Spring Boot</description>
+    <version>0.0.1</version>
+    <name>booking</name>
+    <description>API que recebe as datas de check in e check out e de acordo com as regras de negocio retrona o numero
+        de semanas e quantidade de noites extra antes e depois das semanas principais.
+    </description>
 
     <properties>
         <java.version>1.8</java.version>
